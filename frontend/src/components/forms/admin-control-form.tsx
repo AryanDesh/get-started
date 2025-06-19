@@ -1,8 +1,8 @@
-import { useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
+import { useAdminControlData } from "@/store/FormContext"
 
 const adminFeatureOptions = [
   { value: "dashboard", label: "Admin Dashboard" },
@@ -24,29 +24,12 @@ const userControlOptions = [
   { value: "support", label: "Support Tickets" },
 ]
 
-interface AdminControlFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
+export function AdminControlForm() {
+  const { data, updateData } = useAdminControlData()
 
-export function AdminControlForm({ data, onDataChange }: AdminControlFormProps) {
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
-
-  useEffect(() => {
-    if (data.enabled === undefined) {
-      onDataChange({
-        enabled: false,
-        adminFeatures: [],
-        userControlFeatures: [],
-        separateAdminApp: false,
-        notes: "",
-      })
-    }
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -54,7 +37,7 @@ export function AdminControlForm({ data, onDataChange }: AdminControlFormProps) 
         <Checkbox
           id="enabled"
           checked={data.enabled || false}
-          onCheckedChange={(checked) => updateData("enabled", checked)}
+          onCheckedChange={(checked) => handleUpdate("enabled", checked)}
         />
         <Label htmlFor="enabled">Enable Admin/User Control (Optional)</Label>
       </div>
@@ -66,7 +49,7 @@ export function AdminControlForm({ data, onDataChange }: AdminControlFormProps) 
             <FuzzySearchSelect
               options={adminFeatureOptions}
               values={data.adminFeatures || []}
-              onValuesChange={(values) => updateData("adminFeatures", values)}
+              onValuesChange={(values) => handleUpdate("adminFeatures", values)}
               placeholder="Select admin features..."
               searchPlaceholder="Search admin features..."
               multiple
@@ -78,7 +61,7 @@ export function AdminControlForm({ data, onDataChange }: AdminControlFormProps) 
             <FuzzySearchSelect
               options={userControlOptions}
               values={data.userControlFeatures || []}
-              onValuesChange={(values) => updateData("userControlFeatures", values)}
+              onValuesChange={(values) => handleUpdate("userControlFeatures", values)}
               placeholder="Select user control features..."
               searchPlaceholder="Search user features..."
               multiple
@@ -89,7 +72,7 @@ export function AdminControlForm({ data, onDataChange }: AdminControlFormProps) 
             <Checkbox
               id="separateAdminApp"
               checked={data.separateAdminApp || false}
-              onCheckedChange={(checked) => updateData("separateAdminApp", checked)}
+              onCheckedChange={(checked) => handleUpdate("separateAdminApp", checked)}
             />
             <Label htmlFor="separateAdminApp">Separate Admin Application</Label>
           </div>
@@ -100,7 +83,7 @@ export function AdminControlForm({ data, onDataChange }: AdminControlFormProps) 
               id="notes"
               placeholder="Additional admin and user control requirements..."
               value={data.notes || ""}
-              onChange={(e) => updateData("notes", e.target.value)}
+              onChange={(e) => handleUpdate("notes", e.target.value)}
               rows={4}
             />
           </div>

@@ -1,8 +1,10 @@
-import { useEffect } from "react"
+"use client"
+
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
+import { useBackendData } from "@/store/FormContext"
 
 const moduleOptions = [
   { value: "auth", label: "Authentication Module" },
@@ -42,30 +44,12 @@ const middlewareOptions = [
   { value: "roles", label: "Roles Guard" },
 ]
 
-interface BackendFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
+export function BackendForm() {
+  const { data, updateData } = useBackendData()
 
-export function BackendForm({ data, onDataChange }: BackendFormProps) {
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
-
-  useEffect(() => {
-    if (!data.modules) {
-      onDataChange({
-        modules: [],
-        middleware: [],
-        port: "3000",
-        apiPrefix: "api/v1",
-        swaggerEnabled: true,
-        notes: "",
-      })
-    }
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -74,7 +58,7 @@ export function BackendForm({ data, onDataChange }: BackendFormProps) {
         <FuzzySearchSelect
           options={moduleOptions}
           values={data.modules || []}
-          onValuesChange={(values) => updateData("modules", values)}
+          onValuesChange={(values) => handleUpdate("modules", values)}
           placeholder="Select modules to include (multiple allowed)..."
           searchPlaceholder="Search modules..."
           multiple
@@ -91,7 +75,7 @@ export function BackendForm({ data, onDataChange }: BackendFormProps) {
         <FuzzySearchSelect
           options={middlewareOptions}
           values={data.middleware || []}
-          onValuesChange={(values) => updateData("middleware", values)}
+          onValuesChange={(values) => handleUpdate("middleware", values)}
           placeholder="Select middleware (multiple allowed)..."
           searchPlaceholder="Search middleware..."
           multiple
@@ -110,7 +94,7 @@ export function BackendForm({ data, onDataChange }: BackendFormProps) {
             id="port"
             placeholder="3000"
             value={data.port || ""}
-            onChange={(e) => updateData("port", e.target.value)}
+            onChange={(e) => handleUpdate("port", e.target.value)}
           />
         </div>
 
@@ -120,7 +104,7 @@ export function BackendForm({ data, onDataChange }: BackendFormProps) {
             id="apiPrefix"
             placeholder="api/v1"
             value={data.apiPrefix || ""}
-            onChange={(e) => updateData("apiPrefix", e.target.value)}
+            onChange={(e) => handleUpdate("apiPrefix", e.target.value)}
           />
         </div>
       </div>
@@ -131,7 +115,7 @@ export function BackendForm({ data, onDataChange }: BackendFormProps) {
           id="notes"
           placeholder="Additional backend configuration details..."
           value={data.notes || ""}
-          onChange={(e) => updateData("notes", e.target.value)}
+          onChange={(e) => handleUpdate("notes", e.target.value)}
           rows={4}
         />
       </div>

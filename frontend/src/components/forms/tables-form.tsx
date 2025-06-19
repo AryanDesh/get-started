@@ -1,7 +1,9 @@
-import { useEffect } from "react"
+"use client"
+
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
+import { useTablesData, useIsSQLDatabase } from "@/store/FormContext"
 
 const commonTableOptions = [
   { value: "users", label: "Users" },
@@ -21,43 +23,22 @@ const commonTableOptions = [
   { value: "settings", label: "Settings" },
 ]
 
-interface TablesFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
+export function TablesForm() {
+  const { data, updateData } = useTablesData()
+  const isSQLDatabase = useIsSQLDatabase()
 
-export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
 
-  const isSQLDatabase = () => {
-    const dbType = allData?.database?.database
-    return dbType === "mysql" || dbType === "postgresql"
-  }
-
-  useEffect(() => {
-    if (!data.tables) {
-      onDataChange({
-        tables: [],
-        customTables: "",
-        relationships: "",
-        indexes: "",
-        notes: "",
-      })
-    }
-  }, [])
-
-  if (!isSQLDatabase()) {
+  if (!isSQLDatabase) {
     return (
       <div className="space-y-6">
         <div className="text-center p-8 bg-muted rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Non-SQL Database Selected</h3>
           <p className="text-muted-foreground">
-            Table selection is only applicable for SQL databases (MySQL/PostgreSQL).
-            {allData?.database?.database === "mongodb" && " MongoDB uses collections instead of tables."}
+            Table selection is only applicable for SQL databases (MySQL/PostgreSQL). MongoDB uses collections instead of
+            tables.
           </p>
         </div>
 
@@ -67,7 +48,7 @@ export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
             id="notes"
             placeholder="Describe your database structure, collections, or document schema..."
             value={data.notes || ""}
-            onChange={(e) => updateData("notes", e.target.value)}
+            onChange={(e) => handleUpdate("notes", e.target.value)}
             rows={6}
           />
         </div>
@@ -82,7 +63,7 @@ export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
         <FuzzySearchSelect
           options={commonTableOptions}
           values={data.tables || []}
-          onValuesChange={(values) => updateData("tables", values)}
+          onValuesChange={(values) => handleUpdate("tables", values)}
           placeholder="Select tables to create..."
           searchPlaceholder="Search tables..."
           multiple
@@ -95,7 +76,7 @@ export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
           id="customTables"
           placeholder="List any custom tables not in the predefined list (one per line)..."
           value={data.customTables || ""}
-          onChange={(e) => updateData("customTables", e.target.value)}
+          onChange={(e) => handleUpdate("customTables", e.target.value)}
           rows={3}
         />
       </div>
@@ -106,7 +87,7 @@ export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
           id="relationships"
           placeholder="Describe foreign key relationships between tables..."
           value={data.relationships || ""}
-          onChange={(e) => updateData("relationships", e.target.value)}
+          onChange={(e) => handleUpdate("relationships", e.target.value)}
           rows={4}
         />
       </div>
@@ -117,7 +98,7 @@ export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
           id="indexes"
           placeholder="Specify any indexes, unique constraints, or performance optimizations..."
           value={data.indexes || ""}
-          onChange={(e) => updateData("indexes", e.target.value)}
+          onChange={(e) => handleUpdate("indexes", e.target.value)}
           rows={3}
         />
       </div>
@@ -128,7 +109,7 @@ export function TablesForm({ data, onDataChange, allData }: TablesFormProps) {
           id="notes"
           placeholder="Any additional database structure requirements..."
           value={data.notes || ""}
-          onChange={(e) => updateData("notes", e.target.value)}
+          onChange={(e) => handleUpdate("notes", e.target.value)}
           rows={4}
         />
       </div>

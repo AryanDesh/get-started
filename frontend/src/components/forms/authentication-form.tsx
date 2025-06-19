@@ -1,8 +1,8 @@
-import { useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
+import { useAuthenticationData } from "@/store/FormContext"
 
 const authMethodOptions = [
   { value: "jwt", label: "JWT (JSON Web Tokens)" },
@@ -29,30 +29,12 @@ const thirdPartyOptions = [
   { value: "nextauth", label: "NextAuth.js" },
 ]
 
-interface AuthenticationFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
+export function AuthenticationForm() {
+  const { data, updateData } = useAuthenticationData()
 
-export function AuthenticationForm({ data, onDataChange }: AuthenticationFormProps) {
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
-
-  useEffect(() => {
-    if (!data.authMethod) {
-      onDataChange({
-        authMethod: "",
-        oauthProviders: [],
-        thirdPartyService: "",
-        jwtSecret: "",
-        sessionConfig: "",
-        notes: "",
-      })
-    }
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -61,7 +43,7 @@ export function AuthenticationForm({ data, onDataChange }: AuthenticationFormPro
         <FuzzySearchSelect
           options={authMethodOptions}
           value={data.authMethod || ""}
-          onValueChange={(value) => updateData("authMethod", value)}
+          onValueChange={(value) => handleUpdate("authMethod", value)}
           placeholder="Select authentication method..."
           searchPlaceholder="Search auth methods..."
         />
@@ -72,7 +54,7 @@ export function AuthenticationForm({ data, onDataChange }: AuthenticationFormPro
         <FuzzySearchSelect
           options={oauthProviderOptions}
           values={data.oauthProviders || []}
-          onValuesChange={(values) => updateData("oauthProviders", values)}
+          onValuesChange={(values) => handleUpdate("oauthProviders", values)}
           placeholder="Select OAuth providers..."
           searchPlaceholder="Search providers..."
           multiple
@@ -84,7 +66,7 @@ export function AuthenticationForm({ data, onDataChange }: AuthenticationFormPro
         <FuzzySearchSelect
           options={thirdPartyOptions}
           value={data.thirdPartyService || ""}
-          onValueChange={(value) => updateData("thirdPartyService", value)}
+          onValueChange={(value) => handleUpdate("thirdPartyService", value)}
           placeholder="Select third-party service (optional)..."
           searchPlaceholder="Search services..."
         />
@@ -97,7 +79,7 @@ export function AuthenticationForm({ data, onDataChange }: AuthenticationFormPro
           type="password"
           placeholder="Enter JWT secret key..."
           value={data.jwtSecret || ""}
-          onChange={(e) => updateData("jwtSecret", e.target.value)}
+          onChange={(e) => handleUpdate("jwtSecret", e.target.value)}
         />
       </div>
 
@@ -107,7 +89,7 @@ export function AuthenticationForm({ data, onDataChange }: AuthenticationFormPro
           id="sessionConfig"
           placeholder="Session timeout, storage method, etc..."
           value={data.sessionConfig || ""}
-          onChange={(e) => updateData("sessionConfig", e.target.value)}
+          onChange={(e) => handleUpdate("sessionConfig", e.target.value)}
           rows={3}
         />
       </div>
@@ -118,7 +100,7 @@ export function AuthenticationForm({ data, onDataChange }: AuthenticationFormPro
           id="notes"
           placeholder="Additional authentication configuration notes..."
           value={data.notes || ""}
-          onChange={(e) => updateData("notes", e.target.value)}
+          onChange={(e) => handleUpdate("notes", e.target.value)}
           rows={4}
         />
       </div>

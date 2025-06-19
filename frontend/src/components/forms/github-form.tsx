@@ -1,9 +1,11 @@
-import { useEffect } from "react"
+"use client"
+
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
+import { useGithubData } from "@/store/FormContext"
 
 const workflowOptions = [
   { value: "ci", label: "Continuous Integration" },
@@ -22,33 +24,12 @@ const branchingOptions = [
   { value: "custom", label: "Custom Strategy" },
 ]
 
-interface GithubFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
+export function GithubForm() {
+  const { data, updateData } = useGithubData()
 
-export function GithubForm({ data, onDataChange }: GithubFormProps) {
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
-
-  useEffect(() => {
-    if (!data.repositoryName) {
-      onDataChange({
-        repositoryName: "",
-        description: "",
-        private: true,
-        workflows: [],
-        branchingStrategy: "",
-        protectedBranches: true,
-        issueTemplates: false,
-        prTemplates: false,
-        notes: "",
-      })
-    }
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -58,7 +39,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
           id="repositoryName"
           placeholder="my-awesome-project"
           value={data.repositoryName || ""}
-          onChange={(e) => updateData("repositoryName", e.target.value)}
+          onChange={(e) => handleUpdate("repositoryName", e.target.value)}
         />
       </div>
 
@@ -68,7 +49,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
           id="description"
           placeholder="A brief description of your project..."
           value={data.description || ""}
-          onChange={(e) => updateData("description", e.target.value)}
+          onChange={(e) => handleUpdate("description", e.target.value)}
           rows={3}
         />
       </div>
@@ -77,7 +58,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
         <Checkbox
           id="private"
           checked={data.private || false}
-          onCheckedChange={(checked) => updateData("private", checked)}
+          onCheckedChange={(checked) => handleUpdate("private", checked)}
         />
         <Label htmlFor="private">Private Repository</Label>
       </div>
@@ -87,7 +68,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
         <FuzzySearchSelect
           options={workflowOptions}
           values={data.workflows || []}
-          onValuesChange={(values) => updateData("workflows", values)}
+          onValuesChange={(values) => handleUpdate("workflows", values)}
           placeholder="Select workflows to set up..."
           searchPlaceholder="Search workflows..."
           multiple
@@ -99,7 +80,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
         <FuzzySearchSelect
           options={branchingOptions}
           value={data.branchingStrategy || ""}
-          onValueChange={(value) => updateData("branchingStrategy", value)}
+          onValueChange={(value) => handleUpdate("branchingStrategy", value)}
           placeholder="Select branching strategy..."
           searchPlaceholder="Search strategies..."
         />
@@ -110,7 +91,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
           <Checkbox
             id="protectedBranches"
             checked={data.protectedBranches || false}
-            onCheckedChange={(checked) => updateData("protectedBranches", checked)}
+            onCheckedChange={(checked) => handleUpdate("protectedBranches", checked)}
           />
           <Label htmlFor="protectedBranches">Protected Branches (main/develop)</Label>
         </div>
@@ -119,7 +100,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
           <Checkbox
             id="issueTemplates"
             checked={data.issueTemplates || false}
-            onCheckedChange={(checked) => updateData("issueTemplates", checked)}
+            onCheckedChange={(checked) => handleUpdate("issueTemplates", checked)}
           />
           <Label htmlFor="issueTemplates">Issue Templates</Label>
         </div>
@@ -128,7 +109,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
           <Checkbox
             id="prTemplates"
             checked={data.prTemplates || false}
-            onCheckedChange={(checked) => updateData("prTemplates", checked)}
+            onCheckedChange={(checked) => handleUpdate("prTemplates", checked)}
           />
           <Label htmlFor="prTemplates">Pull Request Templates</Label>
         </div>
@@ -140,7 +121,7 @@ export function GithubForm({ data, onDataChange }: GithubFormProps) {
           id="notes"
           placeholder="Additional GitHub setup requirements, team access, etc..."
           value={data.notes || ""}
-          onChange={(e) => updateData("notes", e.target.value)}
+          onChange={(e) => handleUpdate("notes", e.target.value)}
           rows={4}
         />
       </div>

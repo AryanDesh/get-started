@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react"
+"use client"
+
+import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
@@ -7,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
 import { Trash2, Plus } from "lucide-react"
+import { useRBACData } from "@/store/FormContext"
 
 const roleOptions = [
   { value: "admin", label: "Administrator" },
@@ -39,18 +42,12 @@ const permissionOptions = [
   { value: "view_reports", label: "View Reports" },
 ]
 
-interface RBACFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
-
-export function RBACForm({ data, onDataChange }: RBACFormProps) {
+export function RBACForm() {
+  const { data, updateData } = useRBACData()
   const [newCustomRole, setNewCustomRole] = useState("")
 
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
 
   const getAllRoles = () => {
@@ -64,7 +61,7 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
       ...data.rolePermissions,
       [role]: permissions,
     }
-    updateData("rolePermissions", newRolePermissions)
+    handleUpdate("rolePermissions", newRolePermissions)
   }
 
   const addCustomRole = () => {
@@ -75,9 +72,7 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
         [newCustomRole.trim()]: [],
       }
 
-      // Update both customRoles and rolePermissions at once
-      onDataChange({
-        ...data,
+      updateData({
         customRoles,
         rolePermissions: newRolePermissions,
       })
@@ -87,12 +82,13 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
 
   const removeCustomRole = (roleToRemove: string) => {
     const customRoles = (data.customRoles || []).filter((role: string) => role !== roleToRemove)
-    updateData("customRoles", customRoles)
-
-    // Remove permissions for the deleted role
     const newRolePermissions = { ...data.rolePermissions }
     delete newRolePermissions[roleToRemove]
-    updateData("rolePermissions", newRolePermissions)
+
+    updateData({
+      customRoles,
+      rolePermissions: newRolePermissions,
+    })
   }
 
   const copyPermissionsFromRole = (fromRole: string, toRole: string) => {
@@ -100,63 +96,13 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
     updateRolePermissions(toRole, [...fromPermissions])
   }
 
-  useEffect(() => {
-    if (data.enabled === undefined) {
-      onDataChange({
-        enabled: false,
-        roles: [],
-        customRoles: [],
-        rolePermissions: {},
-        hierarchical: false,
-        notes: "",
-      })
-    }
-  }, [])
-
-  // Update role permissions when roles change
-  useEffect(() => {
-    if (data.enabled && (data.roles || data.customRoles)) {
-      const currentRolePermissions = data.rolePermissions || {}
-      const newRolePermissions = { ...currentRolePermissions }
-
-      // Add permissions object for predefined roles
-      if (data.roles) {
-        data.roles.forEach((role: string) => {
-          if (!newRolePermissions[role]) {
-            newRolePermissions[role] = []
-          }
-        })
-      }
-
-      // Add permissions object for custom roles
-      if (data.customRoles) {
-        data.customRoles.forEach((role: string) => {
-          if (!newRolePermissions[role]) {
-            newRolePermissions[role] = []
-          }
-        })
-      }
-
-      // Remove permissions for roles that are no longer selected
-      Object.keys(newRolePermissions).forEach((role) => {
-        const isInPredefined = (data.roles || []).includes(role)
-        const isInCustom = (data.customRoles || []).includes(role)
-        if (!isInPredefined && !isInCustom) {
-          delete newRolePermissions[role]
-        }
-      })
-
-      updateData("rolePermissions", newRolePermissions)
-    }
-  }, [data.roles, data.customRoles, data.enabled])
-
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
         <Checkbox
           id="enabled"
           checked={data.enabled || false}
-          onCheckedChange={(checked) => updateData("enabled", checked)}
+          onCheckedChange={(checked) => handleUpdate("enabled", checked)}
         />
         <Label htmlFor="enabled">Enable Role-Based Access Control (Optional)</Label>
       </div>
@@ -168,7 +114,7 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
             <FuzzySearchSelect
               options={roleOptions}
               values={data.roles || []}
-              onValuesChange={(values) => updateData("roles", values)}
+              onValuesChange={(values) => handleUpdate("roles", values)}
               placeholder="Select predefined roles..."
               searchPlaceholder="Search roles..."
               multiple
@@ -265,7 +211,7 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
             <Checkbox
               id="hierarchical"
               checked={data.hierarchical || false}
-              onCheckedChange={(checked) => updateData("hierarchical", checked)}
+              onCheckedChange={(checked) => handleUpdate("hierarchical", checked)}
             />
             <Label htmlFor="hierarchical">Hierarchical Role Structure</Label>
           </div>
@@ -286,7 +232,7 @@ export function RBACForm({ data, onDataChange }: RBACFormProps) {
               id="notes"
               placeholder="Additional RBAC requirements, role descriptions, permission explanations..."
               value={data.notes || ""}
-              onChange={(e) => updateData("notes", e.target.value)}
+              onChange={(e) => handleUpdate("notes", e.target.value)}
               rows={4}
             />
           </div>

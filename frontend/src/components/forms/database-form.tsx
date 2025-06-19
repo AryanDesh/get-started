@@ -1,7 +1,7 @@
-import { useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { FuzzySearchSelect } from "@/components/fuzzy-search-select"
+import { useDatabaseData } from "@/store/FormContext"
 
 const databaseOptions = [
   { value: "mysql", label: "MySQL" },
@@ -17,28 +17,12 @@ const ormOptions = [
   { value: "mongoose", label: "Mongoose (MongoDB)" },
 ]
 
-interface DatabaseFormProps {
-  data: any
-  onDataChange: (data: any) => void
-  allData: any
-}
+export function DatabaseForm() {
+  const { data, updateData } = useDatabaseData()
 
-export function DatabaseForm({ data, onDataChange }: DatabaseFormProps) {
-  const updateData = (field: string, value: any) => {
-    const newData = { ...data, [field]: value }
-    onDataChange(newData)
+  const handleUpdate = (field: string, value: any) => {
+    updateData({ [field]: value })
   }
-
-  useEffect(() => {
-    if (!data.database) {
-      onDataChange({
-        database: "",
-        orm: "",
-        connectionString: "",
-        notes: "",
-      })
-    }
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -47,7 +31,7 @@ export function DatabaseForm({ data, onDataChange }: DatabaseFormProps) {
         <FuzzySearchSelect
           options={databaseOptions}
           value={data.database || ""}
-          onValueChange={(value) => updateData("database", value)}
+          onValueChange={(value) => handleUpdate("database", value)}
           placeholder="Select database type..."
           searchPlaceholder="Search databases..."
         />
@@ -58,7 +42,7 @@ export function DatabaseForm({ data, onDataChange }: DatabaseFormProps) {
         <FuzzySearchSelect
           options={ormOptions}
           value={data.orm || ""}
-          onValueChange={(value) => updateData("orm", value)}
+          onValueChange={(value) => handleUpdate("orm", value)}
           placeholder="Select ORM or query builder..."
           searchPlaceholder="Search ORMs..."
         />
@@ -70,7 +54,7 @@ export function DatabaseForm({ data, onDataChange }: DatabaseFormProps) {
           id="connectionString"
           placeholder="Enter your database connection string..."
           value={data.connectionString || ""}
-          onChange={(e) => updateData("connectionString", e.target.value)}
+          onChange={(e) => handleUpdate("connectionString", e.target.value)}
           rows={3}
         />
       </div>
@@ -81,7 +65,7 @@ export function DatabaseForm({ data, onDataChange }: DatabaseFormProps) {
           id="notes"
           placeholder="Any additional database configuration notes..."
           value={data.notes || ""}
-          onChange={(e) => updateData("notes", e.target.value)}
+          onChange={(e) => handleUpdate("notes", e.target.value)}
           rows={4}
         />
       </div>
